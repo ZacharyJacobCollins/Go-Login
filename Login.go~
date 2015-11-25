@@ -53,14 +53,10 @@ func loginHandler(response http.ResponseWriter, request *http.Request) {
 	name := request.FormValue("name")
 	pass := request.FormValue("password")
 	redirectTarget := "/"
-	if name != "zac" && pass != "test" {
+	if name != "" && pass != "" {
 		// .. check credentials ..
-	
-		redirectTarget = "/error"
-	} 
-	if name == "zac" && pass == "test" {
 		setSession(name, response)
-		redirectTarget = "/successful"
+		redirectTarget = "/error"
 	}
 	http.Redirect(response, request, redirectTarget, 302)
 }
@@ -100,32 +96,12 @@ const internalPage = `
 </form>
 `
 
-func internalPageHandler(response http.ResponseWriter, request *http.Request) {
-	userName := getUserName(request)
-	if userName != "" {
-		fmt.Fprintf(response, internalPage, userName)
-	} else {
-		http.Redirect(response, request, "/", 302)
-	}
-}
-
-const incorrectPage = `
+const incorrectPage = '
 <h1>Login Credentials were incorrect, Try again!</h1>
-<a href="/" style="text-decoration:none; color="red">Return</a>
-`
-
-func incorrectPageHandler(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, incorrectPage)
-}
-
-const successfulPage = `
-<h1>Login Successful!</h1>
-<a href="/" style="text-decoration:none; color="red">Return</a>
-`
-
-func successfulPageHandler(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, successfulPage)
-}
+<form method="post" action="/login">
+	<button type="submit">Return</button>
+</form>
+'
 
 // server main method
 
@@ -135,8 +111,7 @@ func main() {
 
 	router.HandleFunc("/", indexPageHandler)
 	router.HandleFunc("/internal", internalPageHandler)
-	router.HandleFunc("/error", incorrectPageHandler)
-	router.HandleFunc("/successful", successfulPageHandler)
+	router.HandleFunc("/error", incorrectPage)
 
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 	router.HandleFunc("/logout", logoutHandler).Methods("POST")
